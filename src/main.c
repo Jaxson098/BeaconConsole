@@ -1,9 +1,5 @@
-#include <stdio.h>
-#include <string.h>
 #include <unistd.h>
-#include <fcntl.h>
-#include <termios.h>
-#include <dirent.h>
+#include <pthread.h>
 
 #include "utils.h"
 
@@ -17,10 +13,15 @@
 //another thread constantly writes counters to json on change
 //on end write stop to all ports
 
+char gamemode[3];
+
 int main() {
-    updateOpenPorts();
-    for (int i = 0; i<10; i++) {
-        printf("open_ports = %s\n",open_ports[i]);
+    pthread_t thread_updateJSON;
+    pthread_t thread_updateOpenPorts;
+    pthread_create(&thread_updateJSON,NULL,updateJSON,NULL);
+    pthread_create(&thread_updateOpenPorts,NULL,updateOpenPorts,NULL);
+    while(1) {
+        sleep(1);
     }
     return 0;
 }

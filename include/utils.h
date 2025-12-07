@@ -1,3 +1,5 @@
+#include "cJSON.h"
+
 struct countersStruct {
 	_Atomic int CF_B;
 	_Atomic int CF_R;
@@ -9,8 +11,14 @@ struct countersStruct {
 	_Atomic int M_P;
 };
 
+extern char gamemode[3];
+
 extern struct countersStruct counters;
 
 extern char open_ports[10][1029];
 
-void updateOpenPorts();
+// extern cJSON *json;
+
+void* updateOpenPorts(void* arg);
+
+void* updateJSON(void* arg);
