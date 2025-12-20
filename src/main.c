@@ -20,6 +20,15 @@ int main() {
     pthread_t thread_updateOpenPorts;
     pthread_create(&thread_updateJSON,NULL,updateJSON,NULL);
     pthread_create(&thread_updateOpenPorts,NULL,updateOpenPorts,NULL);
+
+    pthread_t readers[10];
+    int ids[10];
+
+    for (int i = 0; i<10; i++) {
+        ids[i] = i;
+        pthread_create(&readers[i],NULL,serialCom,&ids[i]);
+    }
+    
     while(1) {
         sleep(1);
     }

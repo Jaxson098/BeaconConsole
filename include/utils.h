@@ -11,14 +11,14 @@ struct countersStruct {
 	_Atomic int M_P;
 };
 
-extern char gamemode[3];
-
 extern struct countersStruct counters;
 
-extern char open_ports[10][1029];
+extern char gamemode[3];
 
-// extern cJSON *json;
+extern char open_ports[10][255];
 
 void* updateOpenPorts(void* arg);
 
 void* updateJSON(void* arg);
+
+void* serialCom(void* arg);
