@@ -14,8 +14,11 @@ struct countersStruct {
 extern struct countersStruct counters;
 
 extern char gamemode[3];
+extern pthread_mutex_t gamemode_lock;
 
 extern char open_ports[10][255];
+
+extern _Atomic int GM_changedFlag;
 
 void* updateOpenPorts(void* arg);
 

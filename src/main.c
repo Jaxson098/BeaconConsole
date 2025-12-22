@@ -1,5 +1,7 @@
 #include <unistd.h>
+#include <stdio.h>
 #include <pthread.h>
+#include <string.h>
 
 #include "utils.h"
 
@@ -17,20 +19,42 @@ char gamemode[3];
 
 int main() {
     pthread_t thread_updateJSON;
-    pthread_t thread_updateOpenPorts;
+    // pthread_t thread_updateOpenPorts;
     pthread_create(&thread_updateJSON,NULL,updateJSON,NULL);
-    pthread_create(&thread_updateOpenPorts,NULL,updateOpenPorts,NULL);
+    // pthread_create(&thread_updateOpenPorts,NULL,updateOpenPorts,NULL);
 
-    pthread_t readers[10];
-    int ids[10];
+    // pthread_t readers[10];
+    // int ids[10];
 
-    for (int i = 0; i<10; i++) {
-        ids[i] = i;
-        pthread_create(&readers[i],NULL,serialCom,&ids[i]);
-    }
+    // for (int i = 0; i<10; i++) {
+    //     ids[i] = i;
+    //     pthread_create(&readers[i],NULL,serialCom,&ids[i]);
+    // }
     
     while(1) {
-        sleep(1);
+        char command[4];
+        fgets(command,4,stdin);
+
+        if (strcmp(command,"CF\n") == 0) {
+            pthread_mutex_lock(&gamemode_lock);
+            strcpy(gamemode,"CF");
+            pthread_mutex_unlock(&gamemode_lock);
+            if (GM_changedFlag == 0) {GM_changedFlag = 1;} else {GM_changedFlag = 0;}
+        }
+        else if (strcmp(command,"WM\n") == 0) {
+            pthread_mutex_lock(&gamemode_lock);
+            strcpy(gamemode,"WM");
+            pthread_mutex_unlock(&gamemode_lock);
+            if (GM_changedFlag == 0) {GM_changedFlag = 1;} else {GM_changedFlag = 0;}
+        }
+        else if (strcmp(command,"M\n") == 0) {
+            pthread_mutex_lock(&gamemode_lock);
+            strcpy(gamemode,"M");
+            pthread_mutex_unlock(&gamemode_lock);
+            if (GM_changedFlag == 0) {GM_changedFlag = 1;} else {GM_changedFlag = 0;}
+        }
+
+        printf("hi");
     }
     return 0;
 }
