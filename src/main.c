@@ -36,25 +36,26 @@ int main() {
         fgets(command,4,stdin);
 
         if (strcmp(command,"CF\n") == 0) {
+            printf("changed to CF");
             pthread_mutex_lock(&gamemode_lock);
             strcpy(gamemode,"CF");
             pthread_mutex_unlock(&gamemode_lock);
             if (GM_changedFlag == 0) {GM_changedFlag = 1;} else {GM_changedFlag = 0;}
         }
         else if (strcmp(command,"WM\n") == 0) {
+            printf("changed to WM");
             pthread_mutex_lock(&gamemode_lock);
             strcpy(gamemode,"WM");
             pthread_mutex_unlock(&gamemode_lock);
             if (GM_changedFlag == 0) {GM_changedFlag = 1;} else {GM_changedFlag = 0;}
         }
         else if (strcmp(command,"M\n") == 0) {
+            printf("changed to M");
             pthread_mutex_lock(&gamemode_lock);
             strcpy(gamemode,"M");
             pthread_mutex_unlock(&gamemode_lock);
             if (GM_changedFlag == 0) {GM_changedFlag = 1;} else {GM_changedFlag = 0;}
         }
-
-        printf("hi");
     }
     return 0;
 }
