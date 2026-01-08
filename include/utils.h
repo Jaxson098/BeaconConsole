@@ -1,4 +1,5 @@
-#include "cJSON.h"
+// #include "cJSON.h"
+#include <pthread.h>
 
 struct countersStruct {
 	_Atomic int CF_B;
@@ -9,6 +10,10 @@ struct countersStruct {
 	_Atomic int M_Y;
 	_Atomic int M_R;
 	_Atomic int M_P;
+	_Atomic int MWM_score;
+	_Atomic int numOpenPorts;
+	_Atomic int M_colorIndex;
+	_Atomic int M_potentialPoints;
 };
 
 extern struct countersStruct counters;
@@ -19,6 +24,7 @@ extern pthread_mutex_t gamemode_lock;
 extern char open_ports[10][255];
 
 extern _Atomic int GM_changedFlag;
+extern _Atomic int running;
 
 void* updateOpenPorts(void* arg);
 

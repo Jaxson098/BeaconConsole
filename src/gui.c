@@ -1,0 +1,306 @@
+#define _POSIX_C_SOURCE 199309L
+
+#include "raylib.h"
+#include "utils.h"
+#include "gui.h"
+
+#include<stdio.h>
+#include<string.h>
+// #include<stdlib.h>
+#include<time.h>
+
+char colors[5][255] = {"Blue","Green","Yellow","Red","Purple"};
+
+char timeInput[6] = "01:30";
+int timeInputCount = 0;
+
+int nameInputCount;
+
+Color blackTrans = { 0, 0, 0, 50 };
+
+_Atomic int running = 0;
+_Atomic int isTyping = 0;
+
+void renderCF() {
+    ClearBackground(WHITE);
+
+    int screenWidth = GetScreenWidth();
+    int screenHeight = GetScreenHeight();
+    int textSize =  screenWidth/25;
+
+    Rectangle blueRect = { 20, 20, (screenWidth/2)-30, (screenHeight/2)-30 };
+    Rectangle redRect = { (screenWidth/2)+10, 20, (screenWidth/2)-30, (screenHeight/2)-30 };
+
+    DrawRectangleRec(blueRect,BLUE);
+    DrawRectangleRec(redRect,RED);
+
+    DrawRectangleLinesEx(blueRect,(float)(screenWidth/75),blackTrans);
+    DrawRectangleLinesEx(redRect,(screenWidth/75),blackTrans);
+
+    char buffer[8];
+    
+    char redScore[255];
+    strcpy(redScore,"Red Team Score: ");
+    sprintf(buffer,"%d",counters.CF_R);
+    strcat(redScore,buffer);
+
+    char blueScore[255];
+    strcpy(blueScore,"Blue Team Score: ");
+    sprintf(buffer,"%d",counters.CF_B);
+    strcat(blueScore,buffer);
+
+
+    //xpos = box x pos + half width - half text width
+    DrawText(
+        blueScore,
+        blueRect.x + (blueRect.width/2) - (MeasureText(blueScore,textSize)/2),
+        blueRect.y + (blueRect.height/2) - (textSize/2),
+        textSize,
+        BLACK
+    );
+
+    DrawText(
+        redScore,
+        redRect.x + (redRect.width/2) - (MeasureText(redScore,textSize)/2),
+        redRect.y + (redRect.height/2) - (textSize/2),
+        textSize,
+        BLACK
+    );
+    
+
+}
+
+void renderWM() {
+    ClearBackground(WHITE);
+
+    int screenWidth = GetScreenWidth();
+    int screenHeight = GetScreenHeight();
+    int textSize = screenWidth/25;
+
+    Rectangle greenRect = { 20, 20, screenWidth-40, (screenHeight/2)-30 };
+
+    DrawRectangleRec(greenRect,GREEN);
+
+    DrawRectangleLinesEx(greenRect,(float)(screenWidth/75),blackTrans);
+
+    char buffer[8];
+    
+    char score[255];
+    strcpy(score,"Score: ");
+    sprintf(buffer,"%d",counters.WM_G);
+    strcat(score,buffer);
+
+    DrawText(
+        score,
+        greenRect.x + (greenRect.width/2) - (MeasureText(score,textSize)/2),
+        greenRect.y + (greenRect.height/2) - (textSize/2),
+        textSize,
+        BLACK
+    );
+}
+
+void renderM() {
+    ClearBackground(WHITE);
+
+    int screenWidth = GetScreenWidth();
+    int screenHeight = GetScreenHeight();
+    int textSize = screenWidth/25;
+
+    Rectangle scoreRect = { 20, 20, (screenWidth/2)-30, (screenHeight/2)-30 };
+    Rectangle colorRect = { (screenWidth/2)+10, 20, (screenWidth/2)-30, (screenHeight/2)-30 };
+
+    DrawRectangleRec(scoreRect,GRAY);
+
+    if (counters.M_colorIndex == 0) {DrawRectangleRec(colorRect,BLUE);}
+    if (counters.M_colorIndex == 1) {DrawRectangleRec(colorRect,GREEN);}
+    if (counters.M_colorIndex == 2) {DrawRectangleRec(colorRect,YELLOW);}
+    if (counters.M_colorIndex == 3) {DrawRectangleRec(colorRect,RED);}
+    if (counters.M_colorIndex == 4) {DrawRectangleRec(colorRect,PURPLE);}
+
+    DrawRectangleLinesEx(scoreRect,(float)(screenWidth/75),blackTrans);
+    DrawRectangleLinesEx(colorRect,(float)(screenWidth/75),blackTrans);
+
+    char buffer[8];
+    
+    char score[255];
+    strcpy(score,"Potential Points: ");
+    sprintf(buffer,"%d",counters.M_potentialPoints);
+    strcat(score,buffer);
+    strcat(score,"\nScore: ");
+    sprintf(buffer,"%d",counters.MWM_score);
+    strcat(score,buffer);
+
+    char color[255];
+    strcpy(color,"Color: ");
+    strcat(color,colors[counters.M_colorIndex]);
+
+    DrawText(
+        score,
+        scoreRect.x + (scoreRect.width/2) - (MeasureText(score,textSize)/2),
+        scoreRect.y + (scoreRect.height/2) - (textSize/2),
+        textSize,
+        BLACK
+    );
+
+    DrawText(
+        color,
+        colorRect.x + (colorRect.width/2) - (MeasureText(color,textSize)/2),
+        colorRect.y + (colorRect.height/2) - (textSize/2),
+        textSize,
+        BLACK
+    );
+}
+
+void renderA() {
+}
+
+struct timespec start;
+double Dstart;
+
+void renderControls() {
+    ClearBackground(WHITE);
+
+    int screenWidth = GetScreenWidth();
+    int screenHeight = GetScreenHeight();
+    int textSize = screenWidth/20;
+    // int changing scor
+
+    struct timespec current;
+
+    Vector2 mousePos = GetMousePosition();
+
+    Rectangle timerRect = { (screenWidth/2)-(screenWidth/6), (screenHeight/2)+10, screenWidth/3, (screenHeight/4)-40 };
+    Rectangle controlBtnRect = { 20, (screenHeight/2)+10, screenWidth/4, (screenHeight/4)-40 };
+
+    DrawRectangleRec(timerRect,GRAY);
+
+    char controlBtnText[255];
+    if (!running) {DrawRectangleRec(controlBtnRect,GREEN); strcpy(controlBtnText,"Start");}
+    if (running) {DrawRectangleRec(controlBtnRect,RED);strcpy(controlBtnText,"Stop");}
+
+    DrawText(
+        controlBtnText,
+        controlBtnRect.x + (controlBtnRect.width/2) - (MeasureText(controlBtnText,textSize)/2),
+        controlBtnRect.y + (controlBtnRect.height/2) - (textSize/2),
+        textSize,
+        BLACK
+    );
+
+    DrawRectangleLinesEx(timerRect,(float)(screenWidth/75),blackTrans);
+    DrawRectangleLinesEx(controlBtnRect,(float)(screenWidth/75),blackTrans);
+
+    if (CheckCollisionPointRec(mousePos,controlBtnRect)) {
+        if (IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
+            DrawRectangleRec(controlBtnRect,blackTrans);
+        }
+        //if relesed this frame
+        if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
+            // PlaySound(buzzer);
+            if (!running) {running=1; clock_gettime(CLOCK_MONOTONIC,&start); Dstart = start.tv_sec + start.tv_nsec*0.000000001;} else {running=0;}
+        }
+    }
+
+    // printf("start = %ld\n",start);
+
+    if (running) {
+        clock_gettime(CLOCK_MONOTONIC,&current);
+        double Dcurrent = current.tv_sec + current.tv_nsec*0.000000001;
+        double elapsed = Dcurrent-Dstart;
+
+        // int a, b, c, d;
+        // sscanf(timeInput[0],"%d",&a);
+        // sscanf(timeInput[1],"%d",&b);
+        // sscanf(timeInput[3],"%d",&c);
+        // sscanf(timeInput[4],"%d",&d);
+        int intTimeInputSecs = ((timeInput[0]-48)*10 + (timeInput[1]-48))*60 + (timeInput[3]-48)*10 + (timeInput[4]-48);
+
+        int timeLeft = intTimeInputSecs - elapsed;
+
+        char buffer[3];
+        char displayTime[6];
+
+        if (timeLeft/60 < 10) {
+            sprintf(buffer,"%d",0);
+            strcpy(displayTime,buffer);
+            sprintf(buffer,"%d",timeLeft/60);
+            strcat(displayTime,buffer);
+        } else {
+            sprintf(buffer,"%d",timeLeft/60);
+            strcpy(displayTime,buffer);
+        }
+        
+        strcat(displayTime,":");
+
+        if (timeLeft%60 < 10) {
+            sprintf(buffer,"%d",0);
+            strcat(displayTime,buffer);
+            sprintf(buffer,"%d",timeLeft%60);
+            strcat(displayTime,buffer);
+        } else {
+            sprintf(buffer,"%d",timeLeft%60);
+            strcat(displayTime,buffer);
+        }
+
+        if (elapsed >= intTimeInputSecs) {
+            running = 0;
+        } else {
+            DrawText(
+                displayTime,
+                timerRect.x + (timerRect.width/2) - (MeasureText(displayTime,textSize)/2),
+                timerRect.y + (timerRect.height/2) - (textSize/2),
+                textSize,
+                BLACK
+            );
+        }
+    } else if (!isTyping) {
+        DrawText(
+            timeInput,
+            timerRect.x + (timerRect.width/2) - (MeasureText(timeInput,textSize)/2),
+            timerRect.y + (timerRect.height/2) - (textSize/2),
+            textSize,
+            BLACK
+        );
+    }
+
+    if (CheckCollisionPointRec(mousePos,timerRect) && !running) {
+        SetMouseCursor(MOUSE_CURSOR_IBEAM);
+        if (IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
+            isTyping = 1;
+            timeInputCount = 0;
+        }
+        if (isTyping) {
+            int key = GetCharPressed();
+            while (key > 0) {
+                if ((key >= 48) && (key <= 57)) {
+                    if (timeInputCount == 2) {
+                        timeInput[timeInputCount+1] = (char)key;
+                        timeInputCount = timeInputCount + 2;
+                    } else {
+                        timeInput[timeInputCount] = (char)key;
+                        timeInputCount++;
+                    }
+                }
+                key = GetCharPressed();
+            }
+        }
+    } else {
+        // for (int i = timeInputCount; i<6; i++) {
+        //     timeInput[i] = (char)48;
+        // }
+        isTyping = 0;
+        SetMouseCursor(MOUSE_CURSOR_DEFAULT);
+    }
+
+    // current = time(NULL);
+    // char time[255];
+    // sprintf(time,"%.f",difftime(current,start));
+    // DrawText(time,200,200,30,BLACK);
+
+    //chars 48-57
+
+    //if !running and collision make mouse I
+    //  if click then set text blank
+    //  if char input then format it and add it to the time
+    //  if mouse no colision but not done formating set everything else to zero
+    //  convert to int for realTime
+}
