@@ -6,6 +6,7 @@
 
 #include "utils.h"
 #include "gui.h"
+#include"controlsGUI.h"
 #include "raylib.h"
 
 //on startup initialize all serial ports connected and put them in an object with their fd and path

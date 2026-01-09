@@ -9,7 +9,7 @@
 // #include<stdlib.h>
 #include<time.h>
 
-char colors[5][255] = {"Blue","Green","Yellow","Red","Purple"};char timeInput[6] = "01:30";
+char colors[5][255] = {"Blue","Green","Yellow","Red","Purple"};
 
 Color blackTrans = { 0, 0, 0, 50 };
 

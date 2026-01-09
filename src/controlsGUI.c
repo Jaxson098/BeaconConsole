@@ -1,8 +1,11 @@
 #define _POSIX_C_SOURCE 199309L
 
-#include<raylib.h>
-#include<gui.h>
+#include"raylib.h"
+#include"gui.h"
+#include"controlsGUI.h"
 #include<time.h>
+#include<string.h>
+#include<stdio.h>
 
 struct timespec start;
 double Dstart;
@@ -15,8 +18,6 @@ int timeInputCount = 0;
 char underscoreArray[6] = "";
 
 int nameInputCount;
-
-Color blackTrans = { 0, 0, 0, 50 };
 
 _Atomic int running = 0;
 _Atomic int isTyping = 0;
@@ -114,7 +115,7 @@ void renderControls() {
             strcat(displayTime,buffer);
         }
 
-        //stop if reached timeInput
+        //stop if reached unde
 
         if (elapsed >= intTimeInputSecs) {
             PlaySound(stopSound);
@@ -212,10 +213,13 @@ void renderControls() {
                 }
             }
         }
-    } else {
+    } else if (isTyping) {
+        SetMouseCursor(MOUSE_CURSOR_DEFAULT);
         framesCounter = 0;
         isTyping = 0;
-        SetMouseCursor(MOUSE_CURSOR_DEFAULT);
+        for (int i = 0; i<6; i++) {
+            underscoreArray[i] = (char)0;
+        }
     }
 }
 
