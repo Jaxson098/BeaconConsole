@@ -19,7 +19,9 @@
 //on end write stop to all ports
 
 char gamemode[3];
-Sound buzzer;
+Sound startSound;
+Sound stopSound;
+
 int main() {
     // pthread_t thread_updateOpenPorts;
 
@@ -38,7 +40,8 @@ int main() {
 
     InitAudioDevice();
 
-    Sound buzzer = LoadSound("start.mp3");
+    startSound = LoadSound("./assets/start.mp3");
+    stopSound = LoadSound("./assets/stop.mp3");
 
     while (!WindowShouldClose()) {
 
@@ -47,9 +50,6 @@ int main() {
 
         renderCF();
         renderControls();
-
-        sleep(1);
-        PlaySound(buzzer);
 
         // current = time(NULL);
         // char time[255];
@@ -60,7 +60,8 @@ int main() {
         EndDrawing();
     }
 
-    UnloadSound(buzzer);
+    UnloadSound(startSound);
+    UnloadSound(stopSound);
     CloseAudioDevice();
 
     CloseWindow();
