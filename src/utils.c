@@ -70,44 +70,6 @@ void* updateOpenPorts(void* arg) {
     }
 }
 
-// void* updateJSON(void* arg) {
-
-//     FILE *fp = fopen("./state.json", "w");
-
-//     while(1) {
-//         if (fp == NULL) {
-//             return NULL;
-//         }
-
-//         cJSON *json = cJSON_CreateObject();
-
-//         cJSON_AddNumberToObject(json, "CF_B", counters.CF_B);
-//         cJSON_AddNumberToObject(json, "CF_R", counters.CF_R);
-//         cJSON_AddNumberToObject(json, "WM_G", counters.WM_G);
-//         cJSON_AddNumberToObject(json, "M_B", counters.M_B);
-//         cJSON_AddNumberToObject(json, "M_G", counters.M_G);
-//         cJSON_AddNumberToObject(json, "M_Y", counters.M_Y);
-//         cJSON_AddNumberToObject(json, "M_R", counters.M_R);
-//         cJSON_AddNumberToObject(json, "M_P", counters.M_P);
-
-//         pthread_mutex_lock(&gamemode_lock);
-//         cJSON_AddStringToObject(json,"gamemode", gamemode);
-//         pthread_mutex_unlock(&gamemode_lock);
-        
-//         char *json_str = cJSON_Print(json);
-
-//         truncate("./state.json",0);
-//         rewind(fp);
-//         fputs(json_str, fp);
-        
-//         // free the JSON string and cJSON object
-//         cJSON_free(json_str);
-//         cJSON_Delete(json);
-
-//         usleep(100000);
-//     }
-// }
-
 void* serialCom(void* arg) {
     int threadID = *((int*)arg);
     char lastSent[3] = "";

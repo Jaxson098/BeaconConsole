@@ -4,3 +4,5 @@ void renderControls();
 
 extern Sound stopSound;
 extern Sound startSound;
+
+extern int page;

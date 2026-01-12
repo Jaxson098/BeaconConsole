@@ -23,6 +23,14 @@ char gamemode[3];
 Sound startSound;
 Sound stopSound;
 
+int page = 0; 
+//0 = game menu
+//1 = saving score
+//2 = scores for CF / brackets
+//3 = scores for WM
+//4 = scores for M
+//5 = scores for A
+
 int main() {
     // pthread_t thread_updateOpenPorts;
 
@@ -49,8 +57,12 @@ int main() {
         //start rendering
         BeginDrawing();
 
-        renderCF();
-        renderControls();
+        if (page == 0) {
+            renderCF();
+            renderControls();
+        } else if (page == 1) {
+            ClearBackground(WHITE);
+        }
 
         // current = time(NULL);
         // char time[255];

@@ -11,18 +11,16 @@ struct timespec start;
 double Dstart;
 
 int framesCounter = 0;
+char underscoreArray[6] = "";
 
 char timeInput[6] = "01:30";
 int timeInputCount = 0;
 
-char underscoreArray[6] = "";
+int running = 0;
+int isTyping = 0;
 
+int hasNewScore = 0;
 int nameInputCount;
-
-_Atomic int running = 0;
-_Atomic int isTyping = 0;
-
-int hasRanOnce = 0;
 
 void renderControls() {
     ClearBackground(WHITE);
@@ -37,6 +35,8 @@ void renderControls() {
 
     Rectangle timerRect = { (screenWidth/2)-(screenWidth/6), (screenHeight/2)+10, screenWidth/3, (screenHeight/4)-40 };
     Rectangle controlBtnRect = { 20, (screenHeight/2)+10, screenWidth/4, (screenHeight/4)-40 };
+
+    Rectangle saveBtnRect = { screenWidth - screenWidth/4 - 20, screenHeight/2 + 10, screenWidth/4, screenHeight/4 -40 };
 
     DrawRectangleRec(timerRect,GRAY);
 
@@ -54,10 +54,36 @@ void renderControls() {
         BLACK
     );
 
+    DrawRectangleRec(saveBtnRect,GREEN);
+
+    DrawText(
+        "Save\nScore",
+        saveBtnRect.x + (saveBtnRect.width/2) - (MeasureText("Save\nScore",screenWidth/25)/2),
+        saveBtnRect.y + (saveBtnRect.height/2) - (screenWidth/25),
+        screenWidth/25,
+        BLACK
+    );
+
+    //handle save score btn functionality
+
+    if (!hasNewScore) {
+        DrawRectangleRec(saveBtnRect,blackTrans);
+    } else {
+        if (CheckCollisionPointRec(mousePos,saveBtnRect)) {
+            if (IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
+                DrawRectangleRec(saveBtnRect,blackTrans);
+            }
+            if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
+                page = 1;
+            }
+        }
+    }
+
     //draw borders
 
     DrawRectangleLinesEx(timerRect,(float)(screenWidth/75),blackTrans);
     DrawRectangleLinesEx(controlBtnRect,(float)(screenWidth/75),blackTrans);
+    DrawRectangleLinesEx(saveBtnRect,(float)(screenWidth/75),blackTrans);
 
     //control button functionality, change running status
 
@@ -70,7 +96,7 @@ void renderControls() {
             PlaySound(startSound);
             //clock_gettime(CLOCK_MONOTONIC, &start) gets the time in seconds in nano seconds since boot 
             //(what monotonic means, realtime would be since epoch) and applies it to start struct
-            if (!running) {running=1; if(hasRanOnce < 1){hasRanOnce++;} clock_gettime(CLOCK_MONOTONIC,&start); Dstart = start.tv_sec + start.tv_nsec*0.000000001;} else {running=0;}
+            if (!running) {running=1; hasNewScore = 0; clock_gettime(CLOCK_MONOTONIC,&start); Dstart = start.tv_sec + start.tv_nsec*0.000000001;} else {running=0;}
         }
     }
 
@@ -120,6 +146,7 @@ void renderControls() {
         if (elapsed >= intTimeInputSecs) {
             PlaySound(stopSound);
             running = 0;
+            hasNewScore = 1;
         } else {
             //otherwise display time, in else beacase dont want to display it for a split second and then stop
             DrawText(
@@ -223,7 +250,18 @@ void renderControls() {
     }
 }
 
-//
 void renderSaveScore() {
+    ClearBackground(WHITE);
 
+    int screenWidth = GetScreenWidth();
+    int screenHeight = GetScreenHeight();
+    int textSize = screenWidth/20;
+
+    DrawText(
+        displayTime,
+        timerRect.x + (timerRect.width/2) - (MeasureText(displayTime,textSize)/2),
+        timerRect.y + (timerRect.height/2) - (textSize/2),
+        textSize,
+        BLACK
+    );
 }

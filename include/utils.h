@@ -10,7 +10,7 @@ struct countersStruct {
 	_Atomic int M_Y;
 	_Atomic int M_R;
 	_Atomic int M_P;
-	_Atomic int MWM_score;
+	_Atomic int MWM_score; //the actual score, idk why its called MWM but im sure i had a reason
 	_Atomic int numOpenPorts;
 	_Atomic int M_colorIndex;
 	_Atomic int M_potentialPoints;
