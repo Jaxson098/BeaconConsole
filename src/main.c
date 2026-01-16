@@ -19,7 +19,13 @@
 //another thread constantly writes counters to json on change
 //on end write stop to all ports
 
-char gamemode[3];
+char gamemode[3] = "CF";
+_Atomic int gamemodeIndex = 0;
+//0 = CF
+//1 = WM
+//2 = M
+// 3 = A
+
 Sound startSound;
 Sound stopSound;
 
@@ -61,7 +67,7 @@ int main() {
             renderCF();
             renderControls();
         } else if (page == 1) {
-            ClearBackground(WHITE);
+            renderSaveScore();
         }
 
         // current = time(NULL);

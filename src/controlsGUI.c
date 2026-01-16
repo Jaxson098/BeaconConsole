@@ -3,6 +3,7 @@
 #include"raylib.h"
 #include"gui.h"
 #include"controlsGUI.h"
+#include"utils.h"
 #include<time.h>
 #include<string.h>
 #include<stdio.h>
@@ -16,7 +17,7 @@ char underscoreArray[6] = "";
 char timeInput[6] = "01:30";
 int timeInputCount = 0;
 
-int running = 0;
+_Atomic int running = 0;
 int isTyping = 0;
 
 int hasNewScore = 0;
@@ -255,13 +256,31 @@ void renderSaveScore() {
 
     int screenWidth = GetScreenWidth();
     int screenHeight = GetScreenHeight();
-    int textSize = screenWidth/20;
+    int textSize = screenWidth/15;
 
-    DrawText(
-        displayTime,
-        timerRect.x + (timerRect.width/2) - (MeasureText(displayTime,textSize)/2),
-        timerRect.y + (timerRect.height/2) - (textSize/2),
-        textSize,
-        BLACK
-    );
+    Rectangle cancelBtnRect = { screenWidth-screenWidth/20, screenHeight-screenWidth/20, screenWidth/20, screenWidth/20 };
+    Rectangle teamName = { screenWidth/4, screenHeight/2, screenWidth*0.75, screenHeight/5 };
+    Rectangle teamName1 = { screenWidth/9, screenHeight/2, screenWidth/3, screenHeight/5 };
+    Rectangle teamName2 = { (screenWidth/9)*2 + screenWidth/3 , screenHeight/2, screenWidth/3, screenHeight/5 };
+
+    DrawRectangleRec(teamName1,RED);
+    DrawRectangleRec(teamName2, BLUE);
+
+    if (gamemodeIndex == 0) {
+        DrawText(
+            "Enter Team Names:",
+            screenWidth/2 - MeasureText("Enter Team Names:",textSize)/2,
+            screenHeight/3 - (textSize/2),
+            textSize,
+            BLACK
+        );
+    } else {
+        DrawText(
+            "Enter Team Name:",
+            screenWidth/2 - MeasureText("Enter Team Name:",textSize)/2,
+            screenHeight/3 - (textSize/2),
+            textSize,
+            BLACK
+        );   
+    }
 }
