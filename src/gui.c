@@ -119,7 +119,7 @@ void renderM() {
     sprintf(buffer,"%d",counters.M_potentialPoints);
     strcat(score,buffer);
     strcat(score,"\nScore: ");
-    sprintf(buffer,"%d",counters.MWM_score);
+    sprintf(buffer,"%d",counters.M_score);
     strcat(score,buffer);
 
     char color[255];
@@ -143,6 +143,7 @@ void renderM() {
     );
 }
 
+//altitude gm
 void renderA() {
 }
 

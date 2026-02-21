@@ -1,23 +1,23 @@
-#include <unistd.h>
+#define VERSION "0.1.0-alpha"
+
 #include <stdio.h>
-#include <pthread.h>
 #include <string.h>
 #include <time.h>
+#include<stdlib.h>
 
 #include "utils.h"
 #include "gui.h"
 #include"controlsGUI.h"
+#include"scoresGUI.h"
 #include "raylib.h"
+#include"startSound.h"
+#include"stopSound.h"
 
-//on startup initialize all serial ports connected and put them in an object with their fd and path
-//create a worker thread for each port
-//create a monitoring thread to watch for disconected by comparing to the ports obj, and open new thread with a new fd
-//have an atomic str be the msg needed to write updated by main()
-//inside worker threads check if the str is equal to last written if not write the atomic string and change the local last written var
-//on space click write whatever the json has as the game mode
-//reset all vars to 0 and record
-//another thread constantly writes counters to json on change
-//on end write stop to all ports
+//todo
+//re write utils.c to use WINapi (see https://www.delftstack.com/howto/cpp/cpp-serial-communication/)
+//a bunch of threads constantly read from ports 3-13
+//main thread ctrls sending gm and writing in general via a for loop on an arr of ports
+//setup csv saving for scores
 
 char gamemode[3] = "CF";
 _Atomic int gamemodeIndex = 0;
@@ -32,13 +32,21 @@ Sound stopSound;
 int page = 0; 
 //0 = game menu
 //1 = saving score
-//2 = scores for CF / brackets
-//3 = scores for WM
-//4 = scores for M
-//5 = scores for A
+//2 = scores
+
+int CF_NumOfScores = 0;
+int WM_NumOfScores = 0;
+int M_NumOfScores = 0;
+int A_NumOfScores = 0;
+
+struct CF_scoresStruct* CF_Scores;
+struct WM_scoresStruct* WM_Scores;
+struct M_scoresStruct* M_Scores;
+struct A_scoresStruct* A_Scores;
 
 int main() {
-    // pthread_t thread_updateOpenPorts;
+
+        // pthread_t thread_updateOpenPorts;
 
     // pthread_create(&thread_updateOpenPorts,NULL,updateOpenPorts,NULL);
 
@@ -49,25 +57,35 @@ int main() {
     //     ids[i] = i;
     //     pthread_create(&readers[i],NULL,serialCom,&ids[i]);
     // }
-
+    SetConfigFlags(FLAG_WINDOW_RESIZABLE);
     InitWindow(1600,900,"Beacon Console");
     SetTargetFPS(60);
 
     InitAudioDevice();
 
-    startSound = LoadSound("./assets/start.mp3");
-    stopSound = LoadSound("./assets/stop.mp3");
+    Wave startWav = LoadWaveFromMemory(".mp3",__assets_start_mp3,__assets_start_mp3_len);
+    startSound = LoadSoundFromWave(startWav);
+
+    Wave stopWav = LoadWaveFromMemory(".mp3",__assets_stop_mp3,__assets_stop_mp3_len);
+    stopSound = LoadSoundFromWave(stopWav);
 
     while (!WindowShouldClose()) {
 
         //start rendering
         BeginDrawing();
 
+        DrawText(VERSION,15,GetScreenHeight()-35,20,BLACK);
+
         if (page == 0) {
-            renderCF();
+            if (gamemodeIndex == 0) renderCF();
+            if (gamemodeIndex == 1) renderWM();
+            if (gamemodeIndex == 2) renderM();
+            // if (gamemodeIndex == 3) renderA();
             renderControls();
         } else if (page == 1) {
             renderSaveScore();
+        } else if (page == 2) {
+            renderScores();
         }
 
         // current = time(NULL);
