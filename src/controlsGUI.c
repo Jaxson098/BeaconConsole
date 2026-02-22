@@ -254,8 +254,8 @@ void renderControls() {
                 running=1; 
                 hasNewScore = 0; 
                 clock_gettime(CLOCK_MONOTONIC,&start); Dstart = start.tv_sec + start.tv_nsec*0.000000001;
-                int* params = malloc(sizeof(int)*2);
                 
+                int* params = malloc(sizeof(int)*2);
                 if (gamemodeIndex == 0) {params[0] = 0; params[1] = 1;}
                 else if (gamemodeIndex == 1) {params[0] = 2; params[1] = 0;}
                 else if (gamemodeIndex == 2) {params[0] = 3; params[1] = 0;}
@@ -278,7 +278,12 @@ void renderControls() {
                 return;
             } else {
                 running=0;
-                writePorts(5,0);
+                int* params = malloc(sizeof(int)*2);
+                params[0] = 5;
+                params[1] = 0;
+                pthread_t t;
+                pthread_create(&t, NULL, writePortsThread, params);
+                pthread_detach(t);
             }
         }
     }

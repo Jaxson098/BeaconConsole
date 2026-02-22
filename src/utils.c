@@ -84,7 +84,7 @@ void* portReader(void* arg) {
     ports[(int)(intptr_t)arg] = port;
 
     while(1) {
-        Sleep(100);
+        // Sleep(100);
         BYTE buffer;
         DWORD dwRead = 0;
         pthread_mutex_lock(&portRWmutex);
@@ -129,7 +129,7 @@ void* portReader(void* arg) {
                 timeout.ReadTotalTimeoutConstant = 0;
                 timeout.ReadTotalTimeoutMultiplier = 0;
                 timeout.WriteTotalTimeoutMultiplier = 0;
-                timeout.WriteTotalTimeoutConstant = 1;
+                timeout.WriteTotalTimeoutConstant = 0;
                 SetCommTimeouts(port, &timeout);
 
                 ports[(int)(intptr_t)arg] = port;
