@@ -18,7 +18,7 @@ As of alpha 0.3.25 the following gamemodes have been implemented or are in devel
 **Concept**. All beacons are either red, orange, or yellow, indicating the altitude required to trigger them correctly. A pilot or team of pilots attempts to triger the all beacons correcty, scoring a point each time they succed and losing one for each failure.
 
 ## Installation And Setup ##
-The Beacon Console (see [releases](https://github.com/Jaxson098/BeaconConsole/releases/tag/0.3.25) requires uploading custom Beacon code inorder to comunicate with them. To do so:
+The Beacon Console (see [releases](https://github.com/Jaxson098/BeaconConsole/releases/tag/0.3.25)) requires uploading custom Beacon code inorder to comunicate with them. To do so:
 1. download the [Arduino IDE](https://www.arduino.cc/en/software/)
 2. Copy and paste the arduiono.cpp file into the IDE
 3. Install the required Libraries
