@@ -1,6 +1,11 @@
 // #include "cJSON.h"
 #include <pthread.h>
 
+#ifdef _WIN32
+#include <windows.h>
+extern HANDLE ports[10];
+#endif
+
 struct countersStruct {
 	_Atomic int CF_B;
 	_Atomic int CF_R;
@@ -19,17 +24,14 @@ struct countersStruct {
 
 extern struct countersStruct counters;
 
-extern char gamemode[3];
 extern _Atomic int gamemodeIndex;
-extern pthread_mutex_t gamemode_lock;
-
-extern char open_ports[10][255];
 
 extern _Atomic int GM_changedFlag;
 extern _Atomic int running;
 
-void* updateOpenPorts(void* arg);
+void* portReader(void* arg);
 
-void* updateJSON(void* arg);
-
-void* serialCom(void* arg);
+void writePorts(
+	int toWrite, 
+	int isCF_GM //if true will ignore toWrite and write 1 to half the ports, and 0 to the other
+);

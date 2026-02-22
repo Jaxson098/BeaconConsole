@@ -1,5 +1,11 @@
 #define _POSIX_C_SOURCE 199309L
 
+#ifdef _WIN32
+#include <windows.h>
+// prevent conflict with Raylib
+#undef Rectangle 
+#endif
+
 #include"raylib.h"
 #include"gui.h"
 #include"controlsGUI.h"
@@ -481,6 +487,7 @@ void renderSaveScore() {
                 CFscore.team1Score=counters.CF_B;
                 CFscore.team2Score=counters.CF_R;
                 CF_Scores[CF_NumOfScores-1] = CFscore;
+                writePorts(0,1);
             }
 
             if (gamemodeIndex == 1) {
@@ -490,6 +497,7 @@ void renderSaveScore() {
                 strcpy(WMscore.teamName,teamName);
                 WMscore.teamScore=counters.WM_G;
                 WM_Scores[WM_NumOfScores-1] = WMscore;
+                writePorts(2,0);
             }
             if (gamemodeIndex == 2) {
                 M_NumOfScores++;
@@ -498,6 +506,7 @@ void renderSaveScore() {
                 strcpy(Mscore.teamName,teamName);
                 Mscore.teamScore=counters.M_score;
                 M_Scores[M_NumOfScores-1] = Mscore;
+                writePorts(3,0);
             }
             if (gamemodeIndex == 3) {
                 A_NumOfScores++;
@@ -506,6 +515,7 @@ void renderSaveScore() {
                 strcpy(Ascore.teamName,teamName);
                 Ascore.teamScore=counters.A_points;
                 A_Scores[A_NumOfScores-1] = Ascore;
+                writePorts(4,0);
             }
             strcpy(teamName,"");
             strcpy(teamName1,"");

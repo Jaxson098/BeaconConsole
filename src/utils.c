@@ -1,155 +1,144 @@
-// #include <stdio.h>
-// #include <dirent.h>
-// #include <string.h>
-// // #include <unistd.h>
-// #include <fcntl.h>
-// #include <termios.h>
-// #include <pthread.h>
+#define _POSIX_C_SOURCE 199309L
 
+#include<pthread.h>
+#include <stdio.h>
 #include "utils.h"
+#include <string.h>
+
+#ifdef _WIN32
+#include<windows.h>
+#endif
+
+//recive codes
+//0 = CF_B++
+//1 = CF_R++
+//2 = WM_G++
+//3 = M_B++
+//4 = M_G++
+//5 = M_Y++
+//6 = M_R++
+//7 = M_P++
 
 struct countersStruct counters = {0};
 
-// char open_ports[10][255] = {0};
+void* portReader(void* arg) {
+    #ifdef _WIN32
 
-// pthread_mutex_t open_ports_lock;
-// pthread_mutex_t gamemode_lock;
+    HANDLE port;
 
-// //not use as a bool flag just toggled betwen 1 and 0 to see in the threads if something changed by comparing it to the last value
-// _Atomic int changedFlag = 0;
-// _Atomic int GM_changedFlag = 0;
+    int portWorking = 1;
 
-// void* updateOpenPorts(void* arg) {
-//     char open_ports_pre_change[10][255] = {0};
+    struct timespec current;
+    double Dcurrent;
+    double LastTried = 0;
+    clock_gettime(CLOCK_MONOTONIC,&current); Dcurrent = current.tv_sec + current.tv_nsec*0.000000001;
 
-//     DIR* dir = opendir("/dev");
+    char portName[255] = "\\\\.\\COM";
+    sprintf(portName+strlen(portName),"%d",*((int*)arg));
 
-//     if (dir == NULL) {
-//         return NULL;
-//     }
+    port = CreateFile(portName, GENERIC_READ | GENERIC_WRITE, 0, 0, OPEN_EXISTING,FILE_ATTRIBUTE_NORMAL, 0);
 
-//     struct dirent* entity;
-//     entity = readdir(dir);
+    DCB dcbSerialParam = {0};
+    dcbSerialParam.DCBlength = sizeof(dcbSerialParam);
 
-//     int i;
-//     i = 0;
+    GetCommState(port, &dcbSerialParam);
 
-//     while(1) {
-//         pthread_mutex_lock(&open_ports_lock);
+    dcbSerialParam.BaudRate = CBR_9600;
+    dcbSerialParam.ByteSize = 8;
+    dcbSerialParam.StopBits = ONESTOPBIT;
+    dcbSerialParam.Parity = NOPARITY;
 
-//         for (int k = 0; k<10; k++) {
-//             strcpy(open_ports_pre_change[k],open_ports[k]);
-//         }
-//         i = 0;
-//         while(entity != NULL && i<10) {
-//             // printf("name %s\n", entity->d_name);
-//             if (strstr(entity->d_name,"tty") != NULL) {
-//                 strcpy(open_ports[i],"/dev/");
-//                 strcat(open_ports[i],entity->d_name);
-//                 i++;
-//             }
-//             entity=readdir(dir);
-//         }
-//         counters.numOpenPorts == i-1;
+    SetCommState(port, &dcbSerialParam);
 
-//         for (int f = i; f<10; f++) {
-//             strcpy(open_ports[f],"");
-//         }
+    COMMTIMEOUTS timeout = {0};
+    timeout.ReadIntervalTimeout = 60;
+    timeout.ReadTotalTimeoutConstant = 60;
+    timeout.ReadTotalTimeoutMultiplier = 15;
+    timeout.WriteTotalTimeoutConstant = 60;
+    timeout.WriteTotalTimeoutMultiplier = 8;
+    SetCommTimeouts(port, &timeout);
 
-//         pthread_mutex_unlock(&open_ports_lock);
+    ports[*((int*)arg)-1] = port;
 
-//         for (int k = 0; k<10; k++) {
-//             if (strcmp(open_ports[k],open_ports_pre_change[k]) != 0) {
-//                 if (changedFlag == 0) {changedFlag = 1;} else {changedFlag = 0;}
-//                 break;
-//             }
-//         }
-//         rewinddir(dir);
-//         sleep(1);
-//     }
-// }
+    while(1) {
+        BYTE buffer;
+        DWORD dwRead = 0;
+        if (portWorking) {
+            if(!ReadFile(port, &buffer, 1, &dwRead, NULL)) {
+                CloseHandle(port);
+                portWorking = 0;
+            } else {
+                int recived = (int)buffer;
+                if (recived == 0) counters.CF_B++;
+                if (recived == 1) counters.CF_R++;
+                if (recived == 2) counters.WM_G++;
+                if (recived == 3) counters.M_B++;
+                if (recived == 4) counters.M_G++;
+                if (recived == 5) counters.M_Y++;
+                if (recived == 6) counters.M_R++;
+                if (recived == 7) counters.M_P++;
+            }
+        } else {
+            //try to reconect every second
+            if (Dcurrent-LastTried > 1) {
 
-// void* serialCom(void* arg) {
-//     int threadID = *((int*)arg); //cast void arg ptr to an int ptr and then dereferance that
-//     char lastSent[3] = "";
-//     int lastchangedFlag = changedFlag;
-//     int GM_lastchangedFlag = GM_changedFlag;
-//     char path[255];
+                double LastTried = Dcurrent;
+                clock_gettime(CLOCK_MONOTONIC,&current); Dcurrent = current.tv_sec + current.tv_nsec*0.000000001;
 
-//     int fd;
-// 	char text[3];
-// 	struct termios options; //Serial ports setting struct
+                port = CreateFile(portName, GENERIC_READ | GENERIC_WRITE, 0, 0, OPEN_EXISTING,FILE_ATTRIBUTE_NORMAL, 0);
 
-//     //Set up serial port
-// 	options.c_cflag = B9600 | CS8 | CLOCAL | CREAD; // setup baud rate, byte size, no modem needed only using local connetions, allow reading
-// 	options.c_iflag = IGNPAR;
-// 	options.c_oflag = 0; //output = raw data
-// 	options.c_lflag = 0; //input = raw data
+                DCB dcbSerialParam = {0};
+                dcbSerialParam.DCBlength = sizeof(dcbSerialParam);
 
-//     pthread_mutex_lock(&open_ports_lock);
-//     strcpy(path,open_ports[threadID]);
-//     pthread_mutex_unlock(&open_ports_lock);
+                GetCommState(port, &dcbSerialParam);
 
-//     fd = open(path, O_RDWR | O_NDELAY | O_NOCTTY);
+                dcbSerialParam.BaudRate = CBR_9600;
+                dcbSerialParam.ByteSize = 8;
+                dcbSerialParam.StopBits = ONESTOPBIT;
+                dcbSerialParam.Parity = NOPARITY;
 
-//     //Apply the settings
-//     tcflush(fd, TCIOFLUSH); //flush everything
-//     tcsetattr(fd, TCSANOW, &options); //apply options to fd, make changes happen now
+                SetCommState(port, &dcbSerialParam);
 
-//     while (1) {
-//         // if (running) {
-//         if (strcmp(path,"") != 0) {
-//             //Read from serial port
-//             memset(text, 0, 3);
-//             read(fd, text, 3);
-//             printf("Received string: %s\n", text);
+                COMMTIMEOUTS timeout = {0}; //no timeout exept a small one for write
+                timeout.ReadIntervalTimeout = 0;
+                timeout.ReadTotalTimeoutConstant = 0;
+                timeout.ReadTotalTimeoutMultiplier = 0;
+                timeout.WriteTotalTimeoutMultiplier = 0;
+                timeout.WriteTotalTimeoutConstant = 50;
+                SetCommTimeouts(port, &timeout);
 
-//             if (strcmp(text,"CFB") == 0) {counters.CF_B++;}
-//             if (strcmp(text,"CFR") == 0) {counters.CF_R++;}
-//             if (strcmp(text,"WMG") == 0) {counters.WM_G++;}
-//             if (strcmp(text,"MB") == 0) {counters.M_B++;}
-//             if (strcmp(text,"MG") == 0) {counters.M_G++;}
-//             if (strcmp(text,"MY") == 0) {counters.M_Y++;}
-//             if (strcmp(text,"MR") == 0) {counters.M_R++;}
-//             if (strcmp(text,"MP") == 0) {counters.M_P++;}
+                ports[*((int*)arg)-1] = port;
+            }
+        }
+    }
+    #endif
+}
 
-//         } if (lastchangedFlag != changedFlag) {
+void writePorts(int toWrite, int isCF_GM) {
+    #ifdef _WIN32
 
-//             pthread_mutex_lock(&open_ports_lock);
-//             strcpy(path,open_ports[threadID]);
-//             pthread_mutex_unlock(&open_ports_lock);
+    BYTE buffer = toWrite;
+    DWORD dwWrite = 0;
+    int portIndexes[10] = {-1};
+    int numPorts = 0;
+    if(isCF_GM) {
+        for (int i = 0; i<10; i++) {
+            if (ports[i] != INVALID_HANDLE_VALUE) {
+                portIndexes[numPorts] = i;
+                numPorts++;
+            }
+        }
+        for (int i = 0; i < numPorts; i++) {
+            if (i%2 == 0) {buffer = 0; WriteFile(ports[portIndexes[i]] , &buffer, 1, &dwWrite, NULL);}
+            else {buffer = 1; WriteFile(ports[portIndexes[i]] , &buffer, 1, &dwWrite, NULL);}
+        }
+    }
 
-//             fd = open(open_ports[threadID], O_RDWR | O_NDELAY | O_NOCTTY);
+    for (int i = 0; i<10; i++) {
+        if (ports[i] != INVALID_HANDLE_VALUE) {
+            WriteFile(ports[i] , &buffer, 1, &dwWrite, NULL);
+        }
+    }
 
-//             //Apply the settings
-//             tcflush(fd, TCIOFLUSH); //flush everything
-//             tcsetattr(fd, TCSANOW, &options); //apply options to fd, make changes happen now
-
-//             sleep(2); //allow for reset
-
-//             if (lastchangedFlag == 0) {lastchangedFlag = 1;} else {lastchangedFlag = 0;}
-
-//         } if (GM_lastchangedFlag != GM_changedFlag) {
-
-//             pthread_mutex_lock(&gamemode_lock);
-//             write(fd, gamemode, strlen(gamemode));
-
-//             if (threadID <= counters.numOpenPorts) {
-//                 if (threadID <= counters.numOpenPorts/2.0) {
-//                     write(fd, "B", strlen("B"));
-//                 } else {
-//                     write(fd, "R", strlen("B"));
-//                 }
-//             }
-//             pthread_mutex_unlock(&gamemode_lock);
-
-//             if (GM_lastchangedFlag == 0) {GM_lastchangedFlag = 1;} else {GM_lastchangedFlag = 0;}
-
-//         }
-
-//         //capture the flag specific:
-
-//         // }
-//     }
-// 	close(fd);
-// }
+    #endif
+}
