@@ -1,3 +1,4 @@
+https://github.com/user-attachments/assets/70112033-4eff-46c9-adaa-394f4d864a7f
 ## Beacon Console ##
 The Beacon Console is a software application developed for the [Drones in School](https://www.dronesinschool.com/) program. It allows for the control of [Beacons](https://www.dronesinschool.com/product/Capture-the-Flag-Beacon) via a GUI, where uses can select gamemodes, run games, and save scores. It is designed for use both in competitions and in practices. All gamemodes are compatible with any amount of Beacons, but competitions use a set of 10. We are currently in an alpha testing stage, with limited use at competitions on the Island of Oahu, Hawaii. However teams are free to begin using it in practices to train pilots.
 
