@@ -1,9 +1,10 @@
-#define VERSION "0.2.0-alpha"
+#define VERSION "0.3.20-alpha"
 
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
-#include<stdlib.h>
+#include <unistd.h>
+#include <stdio.h>
 
 #include "utils.h"
 #include "gui.h"
@@ -15,10 +16,7 @@
 #include "raylib.h"
 
 //todo
-//re write utils.c to use WINapi (see https://www.delftstack.com/howto/cpp/cpp-serial-communication/)
-//a bunch of threads constantly read from ports 3-13
-//main thread ctrls sending gm and writing in general via a for loop on an arr of ports
-//setup csv saving for scores
+//add err msg telling people to reload ports
 
 _Atomic int gamemodeIndex = 0;
 //0 = CF
@@ -44,14 +42,12 @@ struct WM_scoresStruct* WM_Scores;
 struct M_scoresStruct* M_Scores;
 struct A_scoresStruct* A_Scores;
 
+_Atomic int isBooting = 1;
+
 int main() {
 
     #ifdef _WIN32
-    pthread_t thread_portReader;
-
-    for (int i = 0; i<10; i++) {
-        pthread_create(&thread_portReader,NULL,portReader,(void*)(intptr_t)i);
-    }
+        setupPorts();
     #endif
 
     SetConfigFlags(FLAG_WINDOW_RESIZABLE);
@@ -71,7 +67,9 @@ int main() {
         //start rendering
         BeginDrawing();
 
-        DrawText(VERSION,15,GetScreenHeight()-35,20,BLACK);
+        ClearBackground(WHITE);
+
+        DrawText(VERSION,10,GetScreenHeight()-(GetScreenWidth()/175)/2 -10,GetScreenWidth()/175,BLACK);
 
         if (page == 0) {
             if (gamemodeIndex == 0) renderCF();

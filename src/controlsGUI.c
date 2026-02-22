@@ -8,6 +8,7 @@
 #include<string.h>
 #include<stdio.h>
 #include<stdlib.h>
+#include<pthread.h>
 
 struct timespec start;
 double Dstart;
@@ -43,8 +44,49 @@ void renderControls() {
     Rectangle WM_BtnRect = { 20+(screenWidth/6-(screenWidth/250)), screenHeight*0.75 -10, screenWidth/6, screenHeight/6 };
     Rectangle M_BtnRect = { 20+(screenWidth/6-(screenWidth/250))*2, screenHeight*0.75 -10, screenWidth/6, screenHeight/6 };
     Rectangle A_BtnRect = { 20+(screenWidth/6-(screenWidth/250))*3, screenHeight*0.75 -10, screenWidth/6, screenHeight/6 };
+    Rectangle openPortsRect = { 20, screenHeight*0.75 + screenHeight/6 +10, screenWidth/6, screenHeight/20 };
+    Rectangle reloadPortsRect = { 40+screenWidth/6, screenHeight*0.75 + screenHeight/6 + 10, screenWidth/12, screenHeight/20 };
 
     Rectangle Scores_BtnRect = { screenWidth - screenWidth/4 - 20, screenHeight*0.75 -10, screenWidth/4, screenHeight/6 };;
+    
+    //open ports
+    // DrawRectangleRec(reloadPortsRect,LIGHTGRAY);
+    // DrawRectangleLinesEx(reloadPortsRect,(float)(screenWidth/250),blackTrans);
+    // DrawText(
+    //     "Re-Scan",
+    //     reloadPortsRect.x + (reloadPortsRect.width/2) - (MeasureText("Re-Scan",textSizeSmall)/2),
+    //     reloadPortsRect.y + (reloadPortsRect.height/2) - (textSizeSmall/2),
+    //     textSizeSmall,
+    //     BLACK
+    // );
+    // char openPortsTxt[255] = "Connected Ports: ";
+    // sprintf(openPortsTxt+strlen(openPortsTxt),"%d",numberOfPorts);
+    // DrawText(
+    //     openPortsTxt,
+    //     openPortsRect.x + (openPortsRect.width/2) - (MeasureText(openPortsTxt,textSizeSmall)/2),
+    //     openPortsRect.y + (openPortsRect.height/2) - (textSizeSmall/2),
+    //     textSizeSmall,
+    //     BLACK
+    // );
+
+    // if (CheckCollisionPointRec(mousePos,reloadPortsRect) && !running) {
+    //     if (IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
+    //         DrawRectangleRec(reloadPortsRect,blackTrans);
+    //     }
+    //     if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
+    //         printf("isBooting");
+    //         isBooting = 1;
+    //         DrawRectangle(0,0,screenWidth,screenHeight,WHITE);
+    //         DrawText(
+    //             "Connecting To Beacons...",
+    //             GetScreenWidth()/2 - (MeasureText("Connecting To Beacons...",GetScreenWidth()/15)/2),
+    //             GetScreenHeight()/2 - ((GetScreenWidth()/15)/2),
+    //             GetScreenWidth()/15,
+    //             BLACK
+    //         );
+    //         return;
+    //     }
+    // }
 
     //to scores
     DrawRectangleRec(Scores_BtnRect,LIGHTGRAY);
@@ -119,7 +161,6 @@ void renderControls() {
         }
         if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
             gamemodeIndex = 0;
-            running = 0;
         }
     }
 
@@ -129,7 +170,6 @@ void renderControls() {
         }
         if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
             gamemodeIndex = 1;
-            running = 0;
         }
     }
 
@@ -139,7 +179,6 @@ void renderControls() {
         }
         if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
             gamemodeIndex = 2;
-            running = 0;
         }
     }
 
@@ -149,7 +188,6 @@ void renderControls() {
         }
         if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
             gamemodeIndex = 3;
-            running = 0;
         }
     }
 
@@ -212,7 +250,36 @@ void renderControls() {
             PlaySound(startSound);
             //clock_gettime(CLOCK_MONOTONIC, &start) gets the time in seconds in nano seconds since boot 
             //(what monotonic means, realtime would be since epoch) and applies it to start struct
-            if (!running) {running=1; hasNewScore = 0; clock_gettime(CLOCK_MONOTONIC,&start); Dstart = start.tv_sec + start.tv_nsec*0.000000001;} else {running=0;}
+            if (!running) {
+                running=1; 
+                hasNewScore = 0; 
+                clock_gettime(CLOCK_MONOTONIC,&start); Dstart = start.tv_sec + start.tv_nsec*0.000000001;
+                int* params = malloc(sizeof(int)*2);
+                
+                if (gamemodeIndex == 0) {params[0] = 0; params[1] = 1;}
+                else if (gamemodeIndex == 1) {params[0] = 2; params[1] = 0;}
+                else if (gamemodeIndex == 2) {params[0] = 3; params[1] = 0;}
+                else if (gamemodeIndex == 3) {params[0] = 4; params[1] = 0;}
+                pthread_t t;
+                pthread_create(&t, NULL, writePortsThread, params);
+                pthread_detach(t);
+
+                counters.CF_B = 0;
+                counters.CF_R = 0;
+                counters.WM_G = 0;
+                counters.M_B = 0;
+                counters.M_G = 0;
+                counters.M_Y = 0;
+                counters.M_R = 0;
+                counters.M_P = 0;
+                counters.M_potentialPoints = 0;
+                counters.M_score = 0;
+                counters.M_colorIndex = 0;
+                return;
+            } else {
+                running=0;
+                writePorts(5,0);
+            }
         }
     }
 
@@ -257,14 +324,13 @@ void renderControls() {
             strcat(displayTime,buffer);
         }
 
-        //stop if reached unde
-
+        //stop if out of time
         if (elapsed >= intTimeInputSecs) {
             PlaySound(stopSound);
             running = 0;
             hasNewScore = 1;
+            writePorts(5,0);
         } else {
-            //otherwise display time, in else beacase dont want to display it for a split second and then stop
             DrawText(
                 displayTime,
                 timerRect.x + (timerRect.width/2) - (MeasureText(displayTime,textSize)/2),
@@ -481,7 +547,6 @@ void renderSaveScore() {
                 CFscore.team1Score=counters.CF_B;
                 CFscore.team2Score=counters.CF_R;
                 CF_Scores[CF_NumOfScores-1] = CFscore;
-                writePorts(0,1);
             }
 
             if (gamemodeIndex == 1) {
@@ -491,7 +556,6 @@ void renderSaveScore() {
                 strcpy(WMscore.teamName,teamName);
                 WMscore.teamScore=counters.WM_G;
                 WM_Scores[WM_NumOfScores-1] = WMscore;
-                writePorts(2,0);
             }
             if (gamemodeIndex == 2) {
                 M_NumOfScores++;
@@ -500,7 +564,6 @@ void renderSaveScore() {
                 strcpy(Mscore.teamName,teamName);
                 Mscore.teamScore=counters.M_score;
                 M_Scores[M_NumOfScores-1] = Mscore;
-                writePorts(3,0);
             }
             if (gamemodeIndex == 3) {
                 A_NumOfScores++;
@@ -509,11 +572,21 @@ void renderSaveScore() {
                 strcpy(Ascore.teamName,teamName);
                 Ascore.teamScore=counters.A_points;
                 A_Scores[A_NumOfScores-1] = Ascore;
-                writePorts(4,0);
             }
             strcpy(teamName,"");
             strcpy(teamName1,"");
             strcpy(teamName2,"");
+            counters.CF_B = 0;
+            counters.CF_R = 0;
+            counters.WM_G = 0;
+            counters.M_B = 0;
+            counters.M_G = 0;
+            counters.M_Y = 0;
+            counters.M_R = 0;
+            counters.M_P = 0;
+            counters.M_potentialPoints = 0;
+            counters.M_score = 0;
+            counters.M_colorIndex = 0;
             page = 2;
             return;
         }
