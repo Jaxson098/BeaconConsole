@@ -278,6 +278,7 @@ void renderControls() {
                 return;
             } else {
                 running=0;
+                // writePorts(5,0);
                 int* params = malloc(sizeof(int)*2);
                 params[0] = 5;
                 params[1] = 0;

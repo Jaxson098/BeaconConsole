@@ -1,4 +1,4 @@
-#define VERSION "0.3.20-alpha"
+#define VERSION "0.3.25-alpha"
 
 #include <stdio.h>
 #include <string.h>
