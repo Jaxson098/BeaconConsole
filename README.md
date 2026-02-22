@@ -23,4 +23,5 @@ The Beacon Console (see releases) requires uploading custom Beacon code inorder 
 3. Install the required Libraries
 4. Connect the Beacon and select it from the select board menu as a nano
 5. click upload
+
 To have the best experience please disconnect any Serial devices other than the beacons from your computer.
