@@ -1,11 +1,5 @@
 #define _POSIX_C_SOURCE 199309L
 
-#ifdef _WIN32
-#include <windows.h>
-// prevent conflict with Raylib
-#undef Rectangle 
-#endif
-
 #include "raylib.h"
 #include "utils.h"
 #include "gui.h"

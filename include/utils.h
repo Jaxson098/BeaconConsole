@@ -1,10 +1,4 @@
-// #include "cJSON.h"
 #include <pthread.h>
-
-#ifdef _WIN32
-#include <windows.h>
-extern HANDLE ports[10];
-#endif
 
 struct countersStruct {
 	_Atomic int CF_B;

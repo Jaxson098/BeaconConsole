@@ -44,17 +44,13 @@ struct WM_scoresStruct* WM_Scores;
 struct M_scoresStruct* M_Scores;
 struct A_scoresStruct* A_Scores;
 
-#ifdef _WIN32
-HANDLE ports[10];
-#endif
-
 int main() {
 
     #ifdef _WIN32
     pthread_t thread_portReader;
 
     for (int i = 0; i<10; i++) {
-        pthread_create(&thread_portReader,NULL,portReader,i);
+        pthread_create(&thread_portReader,NULL,portReader,(void*)(intptr_t)i);
     }
     #endif
 

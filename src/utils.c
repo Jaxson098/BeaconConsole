@@ -7,6 +7,7 @@
 
 #ifdef _WIN32
 #include<windows.h>
+HANDLE ports[10];
 #endif
 
 //recive codes
